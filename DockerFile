@@ -1,25 +1,10 @@
 # Use an official OpenJDK runtime as a parent image
-FROM eclipse-temurin:17-jdk
+FROM maven:3.8.5-openjdk-17 AS build
+COPY..
+RUN mvn clean package -DskipTests
 
-# Set the working directory
-WORKDIR /app
+FROM openjdk:17.0.1-jdk-slim
+COPY --from=build /target/catsforcuteness-0.0.1-SNAPSHOT.jar cats.jar
 
-# Copy the Maven wrapper and project files
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline
-
-# Copy the entire project
-COPY src ./src
-
-# Build the Spring Boot application
-RUN ./mvnw clean package -DskipTests
-
-# Expose the application port (change if your app runs on a different port)
 EXPOSE 8080
-
-# Run the application
-CMD ["java", "-jar", "target/*.jar"]
+ENTRYPOINT ["java", "-jar", "cats.jar"]
