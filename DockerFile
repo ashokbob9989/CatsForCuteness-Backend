@@ -1,10 +1,13 @@
-# Use an official OpenJDK runtime as a parent image
+# Use Maven to build the app
 FROM maven:3.8.5-openjdk-17 AS build
-COPY..
+WORKDIR /app
+COPY . .
 RUN mvn clean package -DskipTests
 
+# Use OpenJDK to run the app
 FROM openjdk:17.0.1-jdk-slim
-COPY --from=build /target/catsforcuteness-0.0.1-SNAPSHOT.jar cats.jar
+WORKDIR /app
+COPY --from=build /app/target/catsforcuteness-0.0.1-SNAPSHOT.jar cats.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "cats.jar"]
